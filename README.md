@@ -1,4 +1,6 @@
-# 프로젝트 조
+# 전체 파이프 라인 
+전체 파이프라인
+
 ## 파일 구조
 ```text
 Vehicle-Signal-Processing
@@ -34,6 +36,10 @@ Vehicle-Signal-Processing
 |
 |
 |--- README.md
+|
+|
+|
+|--- requirements.txt
 ```
 
 ## 데이터셋 구조
@@ -67,7 +73,23 @@ Vehicle-Signal-Processing
 |Normal|내부 단락이 없는 정상 조건 데이터|
 |ISC|Internal Short Circuit, 내부 단락 조건 데이터|
 |Random|랜덤 전류 프로파일 조건 데이터|
-|CC|Constant Current, 정전류 충방전 조건|
-|DST|Dynamic Stress Test, 동적 전류 프로파일 조건|
+|CC|Constant Current, 정전류 충방전 조건| 일정 전류 실험 
+|DST|Dynamic Stress Test, 동적 전류 프로파일 조건| 실제 차량처럼 전류가 계속 변하는 실험
 |BD|Normal dataset에서 사용되는 정상 배터리 데이터 구분명|
 |CS|ISC test dataset에서 사용되는 내부 단락 배터리 데이터 구분명|
+
+#### 실행 순서 
+
+git clone ...
+cd Vehicle-Signal-Processing
+
+python -m venv venv
+.\venv\Scripts\activate.ps1
+
+python -m pip install -r requirements.txt
+
+python scripts/main_usage_example.py
+
+git pull   # 최신 업데이트 받기
+git push   # 내 수정 업로드
+
