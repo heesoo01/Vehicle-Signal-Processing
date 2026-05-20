@@ -151,7 +151,7 @@ def denoise_innovation(
     return out
 
 
-def _crop_by_seconds(df: pd.DataFrame, crop_seconds: int, time_col: str) -> pd.DataFrame:
+def crop_by_seconds(df: pd.DataFrame, crop_seconds: int, time_col: str = "time") -> pd.DataFrame:
     """초기 EKF 수렴 구간을 제거한다. time 컬럼이 없으면 행 단위로 crop한다."""
     if crop_seconds <= 0:
         return df
@@ -181,7 +181,7 @@ def plot_denoising_result(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     dt, fs = estimate_sampling_rate(result_data, time_col=time_col)
-    stable = _crop_by_seconds(result_data, crop_seconds=crop_seconds, time_col=time_col)
+    stable = crop_by_seconds(result_data, crop_seconds=crop_seconds, time_col=time_col)
 
     t = stable[time_col].to_numpy(dtype=float) if time_col in stable.columns else np.arange(len(stable)) * dt
     raw = _interpolate_nans(stable[raw_col].to_numpy(dtype=float))
