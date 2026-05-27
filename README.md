@@ -78,18 +78,80 @@ Vehicle-Signal-Processing
 |BD|Normal dataset에서 사용되는 정상 배터리 데이터 구분명|
 |CS|ISC test dataset에서 사용되는 내부 단락 배터리 데이터 구분명|
 
-#### 실행 순서 
+#### 실행 순서
 
-git clone ...
-cd Vehicle-Signal-Processing
+1. EKF Q/R 설계
 
-python -m venv venv
-.\venv\Scripts\activate.ps1
+```powershell
+python scripts\cc_ekf_design.py
+```
 
-python -m pip install -r requirements.txt
+역할:
+- CC 데이터들을 불러옵니다.
+- OCV-SOC 테이블을 만듭니다.
+- 여러 Q/R 조합으로 EKF를 반복 실행합니다.
+- NIS, MAE, RMSE 기준으로 최적 Q/R을 찾습니다.
+- `results/cc_qr_grid_search.csv`와 `results/cc_best_ekf_params.csv`를 저장합니다.
 
-python scripts/main_usage_example.py
+이 단계는 뒤의 `visualize_pipeline.py`, `prepare_dataset.py`, `eval_1.2cc.py`가 최적 EKF 파라미터를 읽기 위한 기준 단계입니다.
 
-git pull   # 최신 업데이트 받기
-git push   # 내 수정 업로드
+2. denoise 단독 확인
 
+```powershell
+python scripts\main_usage_example.py
+```
+
+역할:
+- 정상 CC 데이터 하나를 불러옵니다.
+- EKF를 실행해서 `residual`을 만듭니다.
+- `denoise_innovation()`을 적용해서 `filtered_residual`을 만듭니다.
+- `images/denoise_result.png`에 raw residual과 filtered residual 비교 그래프를 저장합니다.
+
+이 파일은 Autoencoder 학습용이 아니라 전처리 함수가 제대로 동작하는지 보는 예제입니다.
+
+3. 전체 파이프라인 시각화
+
+```powershell
+python scripts\visualize_pipeline.py
+```
+
+역할:
+- `cc_ekf_design.py`가 저장한 최적 Q/R을 읽습니다.
+- ISC 1.2CC 10ohm DST 데이터 하나에 EKF를 적용합니다.
+- raw innovation, denoised innovation, filtered PSD를 한 그림으로 확인합니다.
+- `results/pipeline_test_1.2cc_denoised.png`를 저장합니다.
+
+보고서에는 이 그림을 넣으면 `EKF → innovation → denoise → PSD` 흐름 설명에 좋습니다.
+
+4. PSD 데이터셋 저장
+
+```powershell
+python scripts\prepare_dataset.py
+```
+
+역할:
+- Normal DST 전체와 ISC DST 전체를 돌립니다.
+- 각 파일마다 `EKF → denoise → filtered_residual PSD` 변환을 수행합니다.
+- `processed_data/normal_psd_filtered.npy`, `processed_data/isc_psd_filtered.npy`를 저장합니다.
+
+이 파일은 PSD 입력 데이터를 미리 저장하고 싶을 때 사용합니다.
+단, 현재 최종 평가 파일인 `eval_1.2cc.py`는 내부에서 PSD를 직접 만들기 때문에 이 단계는 필수는 아닙니다.
+
+### 5. Autoencoder 최종 평가
+
+```powershell
+python scripts\eval_1.2cc.py
+```
+
+역할:
+- `cc_best_ekf_params.csv` 또는 `cc_qr_grid_search.csv`에서 최적 Q/R을 읽습니다.
+- Normal 1.2CC DST 데이터는 학습/정상 테스트로 나눕니다.
+- ISC 10ohm, 100ohm, 1000ohm 데이터를 테스트합니다.
+- 각 데이터는 `EKF → denoise → filtered_residual PSD` 순서로 Autoencoder 입력이 됩니다.
+- 정상 PSD로 Autoencoder를 학습하고, 재구성 오차 MSE로 ISC 이상 여부를 판단합니다.
+- `results/inference_1.2cc_denoised.png`와 `results/autoencoder_1.2cc_denoised_metrics.csv`를 저장합니다.
+
+핵심 수정점
+
+기존 문제는 Autoencoder가 raw `residual`의 PSD를 바로 쓰거나, `cc_ekf_design.py`에서 찾은 최적 Q/R과 연결되지 않을 수 있다는 점이었습니다.
+정리본에서는 `visualize_pipeline.py`, `prepare_dataset.py`, `eval_1.2cc.py`가 모두 최적 Q/R을 읽고, `filtered_residual` 기준 PSD를 사용하도록 맞췄습니다.
