@@ -2,3 +2,5 @@ __pycache__
 .conda
 .vscode
 voltage_prediction_and_ISC_detection-V1.0
+processed_data/
+.idea/
