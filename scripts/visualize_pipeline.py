@@ -16,6 +16,7 @@ from utils.fft_processor import process_residual_to_psd
 
 DATASET_ROOT = PROJECT_ROOT / "voltage_prediction_and_ISC_detection-V1.0" / "swhlqu-voltage_prediction_and_ISC_detection-dd56682"
 NORMAL_CC_PATH = DATASET_ROOT / "NCM811_NORMAL_TEST" / "CC" / "ISC_BD_0.5CC_0.5CD_1000ohm.csv"
+# 타겟 데이터를 1.2CC 단락 데이터(10ohm)로 변경
 TARGET_PATH = DATASET_ROOT / "NCM811_ISC_TEST" / "DST" / "ISC_CS_1.2CC_DST_10ohm.csv"
 
 RESULTS_DIR = PROJECT_ROOT / "results"
@@ -78,11 +79,18 @@ def main():
         cutoff_hz=0.05,
     )
 
-    # 3. Autoencoder 입력과 같은 filtered_residual 기준 PSD 생성
-    freqs, psd = process_residual_to_psd(
+   # 3. Raw residual PSD와 filtered_residual PSD 둘 다 생성
+    freqs_raw, psd_raw = process_residual_to_psd(
         result_data,
         crop_seconds=500,
-        source_col="filtered_residual",
+        source_col="residual",
+        nperseg=256,
+    )
+
+    freqs_filt, psd_filt = process_residual_to_psd(
+        result_data,
+         crop_seconds=500,
+         source_col="filtered_residual",
         nperseg=256,
     )
 
@@ -110,14 +118,17 @@ def main():
     axes[2].legend()
     axes[2].grid(True)
 
-    axes[3].plot(freqs, psd, label="Welch PSD from filtered_residual")
+    axes[3].semilogy(freqs_raw, psd_raw + 1e-18, label="Raw residual PSD")
+    axes[3].semilogy(freqs_filt, psd_filt + 1e-18, label="Filtered residual PSD")
     axes[3].set_xlim(0, 0.1)
-    axes[3].set_title("Step 4: Frequency Domain Input for Autoencoder")
+    axes[3].set_title("Step 4: Welch PSD Comparison")
+    axes[3].set_xlabel("Frequency [Hz]")
+    axes[3].set_ylabel("PSD [V²/Hz]")
     axes[3].legend()
     axes[3].grid(True)
 
     plt.tight_layout()
-    save_path = RESULTS_DIR / "pipeline_test_1.2cc_denoised.png"
+    save_path = RESULTS_DIR / "pipeline_test_1.2cc_raw_vs_filtered_psd.png"
     plt.savefig(save_path, dpi=300)
     print(f"저장 완료: {save_path}")
 
