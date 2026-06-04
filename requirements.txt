@@ -2,5 +2,8 @@ numpy>=2.0
 pandas>=2.0
 matplotlib>=3.8
 scipy>=1.11
+<<<<<<< HEAD
 torch>= 2.12.0
 
+=======
+>>>>>>> 9ea84ddfa1aff10910ed890d159c97eb1db187df

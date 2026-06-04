@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 __pycache__/
 *.pyc
 .conda/
@@ -6,4 +7,9 @@ __pycache__/
 .venv/
 voltage_prediction_and_ISC_detection-V1.0/
 processed_data/
-results/
+=======
+__pycache__
+.conda
+.vscode
+voltage_prediction_and_ISC_detection-V1.0
+>>>>>>> 9ea84ddfa1aff10910ed890d159c97eb1db187df

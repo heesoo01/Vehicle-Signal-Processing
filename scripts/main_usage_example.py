@@ -16,8 +16,11 @@ DATASET_ROOT = PROJECT_ROOT / "voltage_prediction_and_ISC_detection-V1.0/swhlqu-
 NORMAL_CC_PATH = DATASET_ROOT / "NCM811_NORMAL_TEST/CC/ISC_BD_0.5CC_0.5CD_1000ohm.csv"
 
 def main():
+<<<<<<< HEAD
     (PROJECT_ROOT / "images").mkdir(exist_ok=True)
 
+=======
+>>>>>>> 9ea84ddfa1aff10910ed890d159c97eb1db187df
     # 1. 정상 CC 데이터 로드
     normal_cc = load_right_block(NORMAL_CC_PATH)
     soc_table, ocv_table = build_ocv_table_from_cc([normal_cc])

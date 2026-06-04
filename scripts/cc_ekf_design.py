@@ -131,6 +131,7 @@ def main():
         "Q": np.diag([best["q_soc"], best["q_vrc"]]),
         "R": np.array([[best["r"]]]),
     }
+<<<<<<< HEAD
 
     # 뒤 단계(eval/prepare/visualize)에서 읽기 쉽게 최적 파라미터만 별도 저장
     pd.DataFrame([{
@@ -142,6 +143,8 @@ def main():
         "rmse": best["rmse"],
         "nis_mean": best["nis_mean"],
     }]).to_csv(RESULT_DIR / "cc_best_ekf_params.csv", index=False)
+=======
+>>>>>>> 9ea84ddfa1aff10910ed890d159c97eb1db187df
     combined = run_all_cc(cc_datasets, soc_table, ocv_table, capacity_coulomb, best_params)
     m  = compute_metrics(combined)
     nm = compute_nis_metrics(combined)
